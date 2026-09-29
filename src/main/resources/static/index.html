@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>FitLog - Workout & Calorie Tracker</title>
+</head>
+
+<body>
+
+<h1>FitLog</h1>
+<p>Personal Workout and Calorie Tracker</p>
+
+<hr>
+
+<h2>Create User</h2>
+
+<input type="text" id="name" placeholder="Name">
+<br><br>
+
+<input type="email" id="email" placeholder="Email">
+<br><br>
+
+<button onclick="createUser()">Create User</button>
+
+<p id="userMessage"></p>
+
+<hr>
+
+<h2>Log Workout</h2>
+
+<input type="number" id="userIdWorkout"
+       placeholder="User ID" value="1">
+<br><br>
+
+<input type="text" id="workoutType"
+       placeholder="Workout Type">
+<br><br>
+
+<input type="number" id="duration"
+       placeholder="Duration in minutes">
+<br><br>
+
+<input type="number" id="caloriesBurned"
+       placeholder="Calories Burned">
+<br><br>
+
+<input type="date" id="workoutDate">
+<br><br>
+
+<button onclick="addWorkout()">Add Workout</button>
+
+<p id="workoutMessage"></p>
+
+<hr>
+
+<h2>Log Meal</h2>
+
+<input type="number" id="userIdMeal"
+       placeholder="User ID" value="1">
+<br><br>
+
+<input type="text" id="foodItem"
+       placeholder="Food Item">
+<br><br>
+
+<input type="number" id="quantity"
+       placeholder="Quantity">
+<br><br>
+
+<input type="number" id="calories"
+       placeholder="Calories">
+<br><br>
+
+<input type="date" id="mealDate">
+<br><br>
+
+<button onclick="addMeal()">Add Meal</button>
+
+<p id="mealMessage"></p>
+
+<hr>
+
+<h2>Weekly Summary</h2>
+
+<input type="number" id="summaryUserId"
+       placeholder="User ID" value="1">
+<br><br>
+
+<input type="date" id="weekStart">
+<br><br>
+
+<button onclick="getSummary()">View Weekly Summary</button>
+
+<div id="summary"></div>
+
+<script>
+
+    async function createUser() {
+
+        const name = document.getElementById("name").value;
+        const email = document.getElementById("email").value;
+
+        const response = await fetch("/api/users", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                name: name,
+                email: email
+            })
+        });
+
+        const data = await response.json();
+
+        document.getElementById("userMessage").innerText =
+            "User created. ID: " + data.id;
+    }
+
+
+    async function addWorkout() {
+
+        const userId =
+            document.getElementById("userIdWorkout").value;
+
+        const workout = {
+            type: document.getElementById("workoutType").value,
+            duration: Number(document.getElementById("duration").value),
+            caloriesBurned:
+                Number(document.getElementById("caloriesBurned").value),
+            workoutDate:
+            document.getElementById("workoutDate").value
+        };
+
+        const response = await fetch(
+            "/api/workouts/user/" + userId,
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(workout)
+            }
+        );
+
+        const data = await response.json();
+
+        document.getElementById("workoutMessage").innerText =
+            "Workout added successfully!";
+    }
+
+
+    async function addMeal() {
+
+        const userId =
+            document.getElementById("userIdMeal").value;
+
+        const meal = {
+            foodItem:
+            document.getElementById("foodItem").value,
+
+            quantity:
+                Number(document.getElementById("quantity").value),
+
+            calories:
+                Number(document.getElementById("calories").value),
+
+            mealDate:
+            document.getElementById("mealDate").value
+        };
+
+        const response = await fetch(
+            "/api/meals/user/" + userId,
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(meal)
+            }
+        );
+
+        const data = await response.json();
+
+        document.getElementById("mealMessage").innerText =
+            "Meal added successfully!";
+    }
+
+
+    async function getSummary() {
+
+        const userId =
+            document.getElementById("summaryUserId").value;
+
+        const startDate =
+            document.getElementById("weekStart").value;
+
+        const response = await fetch(
+            "/api/summary/user/" + userId +
+            "/weekly?startDate=" + startDate
+        );
+
+        const data = await response.json();
+
+        document.getElementById("summary").innerHTML = `
+        <h3>Weekly Summary</h3>
+
+        <p>Week Start:
+        ${data.weekStart}</p>
+
+        <p>Week End:
+        ${data.weekEnd}</p>
+
+        <p>Workouts Completed:
+        ${data.workoutsCompleted}</p>
+
+        <p>Calories Consumed:
+        ${data.caloriesConsumed} kcal</p>
+
+        <p>Calories Burned:
+        ${data.caloriesBurned} kcal</p>
+
+        <p>Net Calories:
+        ${data.netCalories} kcal</p>
+    `;
+    }
+
+</script>
+
+</body>
+</html>
